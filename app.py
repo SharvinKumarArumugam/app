@@ -49,4 +49,25 @@ if uploaded_file is not None:
     ax[1].imshow(fft_images_log[1], cmap='gray')
     ax[1].set_title("Green Channel in Frequency Domain")
     ax[2].imshow(fft_images_log[2], cmap='gray')
-    ax[2].set_title("Blue Channel in Frequen
+    ax[2].set_title("Blue Channel in Frequency Domain")
+    st.pyplot(fig)
+
+    # Mask radius slider
+    radius = st.slider("Select Mask Radius", min_value=10, max_value=200, value=50)
+
+    # Create a mask and apply it
+    mask = np.zeros_like(fft_images[0], dtype='uint8')
+    rows, cols = mask.shape
+    cv2.circle(mask, (cols // 2, rows // 2), radius, 255, -1)
+    
+    result_images = []
+    for i in range(3):
+        masked_fft = fft_images[i] * (mask / 255)
+        result_images.append(masked_fft)
+
+    transformed = inverse_fourier(result_images)
+    transformed_clipped = np.clip(transformed, 0, 255).astype('uint8')
+
+    # Display the inverse transformed image
+    st.subheader("Inverse Fourier Transformed Image")
+    st.image(transformed_clipped, caption="Reconstructed Image", use_column_width=True)
